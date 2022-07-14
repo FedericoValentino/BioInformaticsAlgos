@@ -4,22 +4,6 @@
 #include<string>
 #include "TrieNode.h"
 
-
-TrieNode* followPath(TrieNode *root, const std::string& input)
-{
-    TrieNode* currentNode = root;
-    for(char c : input)
-    {
-        int index = currentNode->getIndex(c);
-        if(!currentNode->pointer[index])
-        {
-            return NULL;
-        }
-        currentNode = currentNode->pointer[index];
-    }
-    return currentNode;
-}
-
 void insert(TrieNode *root, const std::string& input)
 {
     TrieNode* currentNode = root;
@@ -45,8 +29,6 @@ TrieNode* BuildSuffixTrie(const std::string& input)
     }
     return root;
 }
-
-
 
 
 int main()
