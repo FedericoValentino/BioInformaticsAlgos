@@ -6,3 +6,5 @@ set(CMAKE_CXX_STANDARD 23)
 add_executable(HierHolzer HierHolzer/HierHolzer.cpp)
 
 add_executable(Edit EditDistance/EditDistance.cpp)
+
+add_executable(Trie SuffixTrie/SuffixTrie.cpp SuffixTrie/TrieNode.cpp SuffixTrie/TrieNode.h)
