@@ -11,3 +11,7 @@ add_executable(Trie SuffixTrie/SuffixTrie.cpp SuffixTrie/TrieNode.cpp SuffixTrie
 
 
 add_executable(SuffixArray SuffixArray/SuffixArray.cpp)
+
+add_executable(Bwa BWA/bwa.cpp)
+
+add_executable(burrows BurrowsWheeler/burrows.cpp BurrowsWheeler/burrow.cpp BurrowsWheeler/burrow.h)
