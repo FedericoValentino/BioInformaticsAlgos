@@ -14,4 +14,4 @@ add_executable(SuffixArray SuffixArray/SuffixArray.cpp)
 
 add_executable(Bwa BWA/bwa.cpp)
 
-add_executable(burrows BurrowsWheeler/burrows.cpp BurrowsWheeler/burrow.cpp BurrowsWheeler/burrow.h)
+add_executable(burrows BurrowsWheeler/burrows.cpp BurrowsWheeler/Burrow.cpp BurrowsWheeler/Burrow.h)
