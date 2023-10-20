@@ -3,7 +3,10 @@
 #include<string>
 #include<math.h>
 #include <iostream>
+#include <vector>
 
+#define GAP_COST 2
+#define REPLACE_COST 5
 
 int E(std::string word1, int i, std::string word2, int j)
 {
@@ -79,14 +82,70 @@ void printTable(int **table, std::string word1, std::string word2)
 
 void backTracking(int** table, std::string word1, std::string word2)
 {
+    int row = word1.size();
+    int col = word2.size();
+    std::vector<char> finalWord1(row);
+    std::vector<char> finalWord2(col);
 
+    int totalCost = 0;
+
+
+    while(!(row == 0 && col == 0))
+    {
+       //backtrack until at start
+       int diagonalScore = (word1[row-1] == word2[col-1]) ? table[row - 1][col - 1] : table[row - 1][col - 1] + 1;
+       int upScore = table[row - 1][col] + 1;
+       int leftScore = table[row][col - 1] + 1;
+       int decision = std::min(std::min(leftScore, upScore), diagonalScore);
+       if(decision == upScore)
+       {
+           finalWord1.emplace(finalWord1.cbegin(), word1[row - 1]);
+           finalWord2.emplace(finalWord2.cbegin(), '-');
+           row = row - 1;
+           col = col;
+
+           totalCost += GAP_COST;
+       }
+       else if(decision == leftScore)
+       {
+           finalWord2.emplace(finalWord2.cbegin(), word2[col - 1]);
+           finalWord1.emplace(finalWord1.cbegin(), '-');
+           row = row;
+           col = col - 1;
+
+           totalCost += GAP_COST;
+       }
+       else if(decision == table[row - 1][col - 1])
+       {
+           finalWord1.emplace(finalWord1.cbegin(), word1[row - 1]);
+           finalWord2.emplace(finalWord2.cbegin(), word2[col - 1]);
+           row = row - 1;
+           col = col - 1;
+
+           totalCost += 0;
+       }
+       else if(decision == table[row - 1][col - 1] + 1)
+       {
+           finalWord1.emplace(finalWord1.cbegin(), '*');
+           finalWord2.emplace(finalWord2.cbegin(), '*');
+           row = row - 1;
+           col = col - 1;
+
+           totalCost += REPLACE_COST * 2;
+       }
+
+    }
+
+    std::cout<<finalWord1.data()<<std::endl;
+    std::cout<<finalWord2.data()<<std::endl;
+    std::cout<<"Total Cost: "<<totalCost<<std::endl;
 }
 
 
 int main()
 {
-    std::string word1 = "sunday";
-    std::string word2 = "saturday";
+    std::string word2 = "AGGGCT";
+    std::string word1 = "AGGCA";
 
     int** Edit = (int**)malloc(sizeof(int*) * (word1.size()+1));
     for(int i = 0; i < word1.size()+1; i++)
