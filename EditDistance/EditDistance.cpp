@@ -6,7 +6,7 @@
 #include <vector>
 
 #define GAP_COST 2
-#define REPLACE_COST 5
+#define REPLACE_COST 10
 
 int E(std::string word1, int i, std::string word2, int j)
 {
@@ -93,9 +93,9 @@ void backTracking(int** table, std::string word1, std::string word2)
     while(!(row == 0 && col == 0))
     {
        //backtrack until at start
-       int diagonalScore = (word1[row-1] == word2[col-1]) ? table[row - 1][col - 1] : table[row - 1][col - 1] + 1;
-       int upScore = table[row - 1][col] + 1;
-       int leftScore = table[row][col - 1] + 1;
+       int diagonalScore = (word1[row-1] == word2[col-1]) ? table[row - 1][col - 1] : table[row - 1][col - 1] + REPLACE_COST;
+       int upScore = table[row - 1][col] + GAP_COST;
+       int leftScore = table[row][col - 1] + GAP_COST;
        int decision = std::min(std::min(leftScore, upScore), diagonalScore);
        if(decision == upScore)
        {
@@ -124,7 +124,7 @@ void backTracking(int** table, std::string word1, std::string word2)
 
            totalCost += 0;
        }
-       else if(decision == table[row - 1][col - 1] + 1)
+       else if(decision == table[row - 1][col - 1] + REPLACE_COST)
        {
            finalWord1.emplace(finalWord1.cbegin(), '*');
            finalWord2.emplace(finalWord2.cbegin(), '*');
