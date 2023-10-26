@@ -1,14 +1,11 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string>
-#include<math.h>
+#include <stdlib.h>
+#include <string>
 #include <iostream>
 #include <vector>
+#include <cstdint>
 
-#define GAP_COST 2
-#define REPLACE_COST 10
 
-int E(std::string word1, int i, std::string word2, int j, int** table)
+int E(std::string word1, int i, std::string word2, int j, int** table, int gapCost, int replaceCost)
 {
     if(word1.empty() && word2.empty())
     {
@@ -45,16 +42,16 @@ int E(std::string word1, int i, std::string word2, int j, int** table)
     }
     else
     {
-        int x= std::min(1 + E(word1.substr(0, i), i, word2.substr(0, j-1) , j-1, table),
-                   1 + E(word1.substr(0, i-1), i-1, word2.substr(0, j) , j, table));
+        int x= std::min(gapCost + E(word1.substr(0, i), i, word2.substr(0, j-1) , j-1, table, gapCost, replaceCost),
+                        gapCost + E(word1.substr(0, i-1), i-1, word2.substr(0, j) , j, table, gapCost, replaceCost));
         int y = 255;
         if(word1[i-1] == word2[j-1])
         {
-            y = E(word1.substr(0, i-1), i-1, word2.substr(0, j-1) , j-1, table);
+            y = E(word1.substr(0, i-1), i-1, word2.substr(0, j-1) , j-1, table, gapCost, replaceCost);
         }
         else
         {
-            y = 1 + E(word1.substr(0, i-1), i-1, word2.substr(0, j-1) , j-1, table);
+            y = replaceCost*2 + E(word1.substr(0, i-1), i-1, word2.substr(0, j-1) , j-1, table, gapCost, replaceCost);
         }
         table[i][j] = std::min(x, y);
         return std::min(x, y);
@@ -87,7 +84,7 @@ void printTable(int **table, std::string word1, std::string word2)
 }
 
 
-void backTracking(int** table, std::string word1, std::string word2)
+void backTracking(int** table, std::string word1, std::string word2, int gapCost, int replaceCost)
 {
     int row = word1.size();
     int col = word2.size();
@@ -99,79 +96,75 @@ void backTracking(int** table, std::string word1, std::string word2)
 
     while(!(row == 0 && col == 0))
     {
-       //backtrack until at start
-       int diagonalScore;
-       if(row - 1 >= 0 && col - 1 >= 0)
-       {
-           diagonalScore = (word1[row-1] == word2[col-1]) ? table[row - 1][col - 1] : table[row - 1][col - 1] + REPLACE_COST;
-       }
-       else
-       {
-           diagonalScore = INT32_MAX;
-       }
-       int upScore;
-       if(row - 1 >= 0)
-       {
-           upScore = table[row - 1][col] + GAP_COST;
-       }
-       else
-       {
-           upScore = INT32_MAX;
-       }
+        //backtrack until at start
+        int diagonalScore;
+        if(row - 1 >= 0 && col - 1 >= 0)
+        {
+            diagonalScore = (word1[row-1] == word2[col-1]) ? table[row - 1][col - 1] : table[row - 1][col - 1] + replaceCost*2;
+        }
+        else
+        {
+            diagonalScore = INT32_MAX;
+        }
+        int upScore;
+        if(row - 1 >= 0)
+        {
+            upScore = table[row - 1][col] + gapCost;
+        }
+        else
+        {
+            upScore = INT32_MAX;
+        }
 
-       int leftScore;
-       if(col - 1 >= 0)
-       {
-           leftScore = table[row][col - 1] + GAP_COST;
-       }
-       else
-       {
-           leftScore = INT32_MAX;
-       }
+        int leftScore;
+        if(col - 1 >= 0)
+        {
+            leftScore = table[row][col - 1] + gapCost;
+        }
+        else
+        {
+            leftScore = INT32_MAX;
+        }
 
 
 
-       int decision = std::min(std::min(leftScore, upScore), diagonalScore);
-       if(decision == upScore)
-       {
-           std::cout<<"going up"<<std::endl;
-           finalWord1.emplace(finalWord1.cbegin(), word1[row - 1]);
-           finalWord2.emplace(finalWord2.cbegin(), '-');
-           row = row - 1;
-           col = col;
+        int decision = std::min(std::min(leftScore, upScore), diagonalScore);
+        if(decision == upScore)
+        {
+            finalWord1.emplace(finalWord1.cbegin(), word1[row - 1]);
+            finalWord2.emplace(finalWord2.cbegin(), '-');
+            row = row - 1;
+            col = col;
 
-           totalCost += GAP_COST;
-       }
-       else if(decision == leftScore)
-       {
-           std::cout<<"going left"<<std::endl;
-           finalWord2.emplace(finalWord2.cbegin(), word2[col - 1]);
-           finalWord1.emplace(finalWord1.cbegin(), '-');
-           row = row;
-           col = col - 1;
+            totalCost += gapCost;
+        }
+        else if(decision == leftScore)
+        {
+            finalWord2.emplace(finalWord2.cbegin(), word2[col - 1]);
+            finalWord1.emplace(finalWord1.cbegin(), '-');
+            row = row;
+            col = col - 1;
 
-           totalCost += GAP_COST;
-       }
-       else if(decision == table[row - 1][col - 1])
-       {
-           std::cout<<"going diag"<<std::endl;
-           finalWord1.emplace(finalWord1.cbegin(), word1[row - 1]);
-           finalWord2.emplace(finalWord2.cbegin(), word2[col - 1]);
-           row = row - 1;
-           col = col - 1;
+            totalCost += gapCost;
+        }
+        else if(decision == table[row - 1][col - 1])
+        {
+            finalWord1.emplace(finalWord1.cbegin(), word1[row - 1]);
+            finalWord2.emplace(finalWord2.cbegin(), word2[col - 1]);
+            row = row - 1;
+            col = col - 1;
 
-           totalCost += 0;
-       }
-       else if(decision == table[row - 1][col - 1] + REPLACE_COST)
-       {
-           std::cout<<"going diag"<<std::endl;
-           finalWord1.emplace(finalWord1.cbegin(), '*');
-           finalWord2.emplace(finalWord2.cbegin(), '*');
-           row = row - 1;
-           col = col - 1;
+            totalCost += 0;
+        }
+        else if(decision == table[row - 1][col - 1] + replaceCost*2)
+        {
+            finalWord1.emplace(finalWord1.cbegin(), '*');
+            finalWord2.emplace(finalWord2.cbegin(), '*');
+            row = row - 1;
+            col = col - 1;
 
-           totalCost += REPLACE_COST * 2;
-       }
+            totalCost += replaceCost * 2;
+        }
 
     }
 
@@ -180,13 +173,12 @@ void backTracking(int** table, std::string word1, std::string word2)
     std::cout<<"Total Cost: "<<totalCost<<std::endl;
 }
 
-std::vector<char> randomWord()
+std::vector<char> randomWord(int len)
 {
     std::vector<char> string;
-    bool generating = true;
-    while(generating)
+    for(int i = 0; i < len; i++)
     {
-        int random = rand() % 5;
+        int random = rand() % 4;
         switch(random)
         {
             case 0:
@@ -201,12 +193,7 @@ std::vector<char> randomWord()
             case 3:
                 string.push_back('G');
                 break;
-            case 4:
-                if(!string.empty())
-                    generating = false;
-                break;
             default:
-                generating = false;
                 break;
         }
 
@@ -215,11 +202,25 @@ std::vector<char> randomWord()
     return string;
 };
 
-int main()
+int main(int argc, char* argv[])
 {
+    if(argc != 5)
+    {
+        std::cout<<"Usage: ./<exec_name> firstStringLen secondStringLen gapCost replaceCost";
+        exit(0);
+    }
+
+    int len1 = atoi(argv[1]);
+    int len2 = atoi(argv[2]);
+    int gapCost = atoi(argv[3]);
+    int replaceCost = atoi(argv[4]);
+
+
     srand(time(NULL));
-    std::string word2 = randomWord().data();
-    std::string word1 = randomWord().data();
+
+    std::string word1 = randomWord(len1).data();
+    std::string word2 = randomWord(len2).data();
+
 
     int** Edit = (int**)malloc(sizeof(int*) * (word1.size()+1));
     for(int i = 0; i < word1.size()+1; i++)
@@ -235,10 +236,10 @@ int main()
         Edit[i][0] = i;
     }
 
-    E(word1, word1.size(),  word2, word2.size(), Edit);
+    E(word1, word1.size(),  word2, word2.size(), Edit, gapCost, replaceCost);
 
     printTable(Edit, word1, word2);
 
-    backTracking(Edit, word1, word2);
+    backTracking(Edit, word1, word2, gapCost, replaceCost);
 
 }
