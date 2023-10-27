@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdint>
+#include <set>
 
 
 int E(std::string word1, int i, std::string word2, int j, int** table, int gapCost, int replaceCost)
@@ -14,8 +15,8 @@ int E(std::string word1, int i, std::string word2, int j, int** table, int gapCo
     }
     else if((word1.size() == 1 && word2.empty()) || (word2.size() == 1 && word1.empty()))
     {
-        table[i][j] = 1;
-        return 1;
+        table[i][j] = gapCost;
+        return gapCost;
     }
     else if(word1.size() == 1 && word2.size() == 1)
     {
@@ -32,13 +33,13 @@ int E(std::string word1, int i, std::string word2, int j, int** table, int gapCo
     }
     else if(word1.empty())
     {
-        table[i][j] = j;
-        return j;
+        table[i][j] = j*gapCost;
+        return j*gapCost;
     }
     else if(word2.empty())
     {
-        table[i][j] = i;
-        return i;
+        table[i][j] = i*gapCost;
+        return i*gapCost;
     }
     else
     {
@@ -175,6 +176,12 @@ void backTracking(int** table, std::string word1, std::string word2, int gapCost
 
 std::vector<char> randomWord(int len)
 {
+    char characters[2][4] = {'A', 'C', 'T', 'G',
+                             0,0,0,0};
+
+    std::vector<int> positions[4];
+
+
     std::vector<char> string;
     for(int i = 0; i < len; i++)
     {
@@ -183,21 +190,49 @@ std::vector<char> randomWord(int len)
         {
             case 0:
                 string.push_back('A');
+                characters[1][0]++;
+                positions[0].push_back(i);
                 break;
             case 1:
                 string.push_back('C');
+                characters[1][1]++;
+                positions[1].push_back(i);
                 break;
             case 2:
                 string.push_back('T');
+                characters[1][2]++;
+                positions[2].push_back(i);
                 break;
             case 3:
                 string.push_back('G');
+                characters[1][3]++;
+                positions[3].push_back(i);
                 break;
             default:
                 break;
         }
-
     }
+
+    for(int i = 0; i < 4; i++)
+    {
+        if(characters[1][i] == 0)
+        {
+            for(int j = 0; j < 4; j++)
+            {
+                if(characters[1][j] > 1)
+                {
+                    int randomPositionFromJ = rand() % positions[j].size();
+                    string[positions[j][randomPositionFromJ]] = characters[0][i];
+                    characters[1][i]++;
+                    characters[1][j]--;
+                    positions[j].erase(positions[j].begin()+randomPositionFromJ);
+                    break;
+                }
+            }
+        }
+    }
+
+
     string.push_back('\0');
     return string;
 };
@@ -232,8 +267,8 @@ int main(int argc, char* argv[])
     //table base case initialization
     for(int i = 0; i < word1.size()+1; i++)
     {
-        Edit[0][i] = i;
-        Edit[i][0] = i;
+        Edit[0][i] = 2*i;
+        Edit[i][0] = 2*i;
     }
 
     E(word1, word1.size(),  word2, word2.size(), Edit, gapCost, replaceCost);
